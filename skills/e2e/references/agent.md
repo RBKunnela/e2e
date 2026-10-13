@@ -85,10 +85,12 @@ context, so each persona records and replays its own steps.
 ## act: one goal
 
 ```ts
-import { credentials } from 'e2e';
+import { credentials, expect } from 'e2e';
 
 await agent.act('add a todo named "Buy milk"');
+await expect(screen.getByRole('listitem', 'Buy milk')).toBeVisible();
 await agent.act('mark the "Buy milk" todo as done');
+await expect(screen.getByRole('checkbox', 'Buy milk')).toBeChecked();
 await agent.act('invite {email} as an editor', { params: { email: 'ada@example.test' } });
 
 const member = credentials.user('member');
