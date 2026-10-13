@@ -215,7 +215,8 @@ masked pixels fail with `POLICY_DENIED`.
   are the path, not more goals: scrolling to a control, closing a banner,
   opening the menu that holds it, filling the fields of one form.
 - A split flow fails at the goal that broke. Each goal replays from its own
-  recording and gets the full step budget.
+  recording and gets its own `maxSteps` and `maxModelCalls`; the test
+  timeout still caps them all.
 
 ```ts
 // BAD: three goals in one instruction, one recording, no check between them.
