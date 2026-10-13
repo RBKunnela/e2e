@@ -47,6 +47,29 @@ The package also ships these docs as `.mdx` pages for offline reading, in
 `node_modules/e2e/docs` in a single-package project. A link such as
 `/reference/cli` is `docs/reference/cli.mdx`.
 
+<Accordion title="Try the local Claude or Codex plugin">
+
+From a checkout of the e2e repository:
+
+<CodeGroup>
+```bash Codex
+codex plugin marketplace add ./
+codex plugin add e2e@e2e
+```
+
+```bash Claude
+claude plugin marketplace add ./
+claude plugin install e2e@e2e
+```
+</CodeGroup>
+
+Start a new session. The plugin adds the `e2e` and
+`create-verification-skill` skills, not the npm package or the MCP server.
+Run the generator as `$e2e:create-verification-skill` in Codex or
+`/e2e:create-verification-skill` in Claude Code.
+
+</Accordion>
+
 ## Let the agent use the app
 
 `e2e mcp` lets the coding agent open the app and use it. Each agent,
@@ -59,17 +82,26 @@ current app and returns the test code when exactly one element matches.
 
 <CodeGroup>
 ```bash npm
-claude mcp add e2e -- npx e2e mcp
+claude mcp add --scope project e2e -- npx e2e mcp
 ```
 
 ```bash pnpm
-claude mcp add e2e -- pnpm exec e2e mcp
+claude mcp add --scope project e2e -- pnpm exec e2e mcp
 ```
 
 ```bash bun
-claude mcp add e2e -- bunx e2e mcp
+claude mcp add --scope project e2e -- bunx e2e mcp
 ```
 </CodeGroup>
+
+For Codex, add the server to the project's `.codex/config.toml`, trust the
+project, and start a new session:
+
+```toml
+[mcp_servers.e2e]
+command = "npx"
+args = ["e2e", "mcp"]
+```
 
 The server does not run tests. See the [MCP server reference](/reference/mcp)
 for its tools, session rules, and flags.
