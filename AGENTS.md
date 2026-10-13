@@ -212,7 +212,7 @@ suites that consume the built packages the way a user would.
   both point here. Edit skill Markdown in `skills/`, then run
   `pnpm plugins:sync`; `pnpm plugins:check` checks the generated copies,
   license, Claude manifest, and both manifests' `version`, which is the
-  runner's (`version-packages` and `canary:publish` sync it, so plugin
+  runner's (`version-packages` syncs it, so plugin
   installs update once per release). The Codex manifest's other fields,
   assets, README, and per-skill `agents/openai.yaml` are maintained in the
   plugin. Keep the

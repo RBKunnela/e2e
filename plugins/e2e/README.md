@@ -77,7 +77,8 @@ Writing and running tests through the CLI does not require an MCP connection.
 - `npx e2e feedback` sends a report to the same project. The skill shows the
   report first and sends it only when you agree.
 - Agent steps send the redacted screen to the model provider you configure.
-  Secrets never reach the model.
+  See [Security](https://e2e.tester.army/docs/reference/security) for what
+  is redacted.
 
 ## Maintain the package
 

@@ -46,7 +46,7 @@ symlinks to it), registers MCP in `.mcp.json` and `.cursor/mcp.json`, skips
 installing dependencies.
 
 The wizard needs a terminal: without one, `init` exits with code 2. From an
-agent's shell, run `init --yes` when its defaults fit and install the
+agent's shell, run `npx e2e init --yes` when its defaults fit and install the
 dependencies after it, or install by hand (below). Neither registers the MCP
 server for Codex (topic `mcp`).
 
