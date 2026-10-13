@@ -50,8 +50,9 @@ one exists, this is a later session:
    names. Its `Next` section names the slice this session takes, unless the
    user names another.
 2. Check it against the repo before trusting it: every `ported` test still
-   exists in both suites, every source test the file lists still exists
-   (except `retired` ones, deleted on purpose), and no new source test is missing from it (add those as `todo`).
+   exists in both suites, every source file or test it lists still exists
+   (except `retired` ones, deleted on purpose), and no new source file or
+   test is missing from it (add those as `todo`).
 3. Run the file's `Run new` command once. A ported test that fails now is
    the first thing to fix, before any new slice.
 4. Unless the progress file's `Harness:` line says `done`, go to step 3, Build
@@ -66,13 +67,13 @@ Answer these from the repo; ask the user only what you cannot observe.
 | Question | Where the answer is | What it decides |
 | --- | --- | --- |
 | Source runner | The detection table above | The two docs read before this table |
-| Tests | Every spec, flow, or test file, with its titles, tags, and per-platform or per-browser branches | The progress file's rows, one per source test. Count each test's assertions now, explicit (`assertVisible`, `expect`, `should`) and implicit (a tap that fails when its target is missing), so a port can be checked against the count |
+| Tests | Every spec, flow, or test file, with its titles, tags, and per-platform or per-browser branches. Count tests with the runner's own listing (`playwright test --list`), not by grepping: tests made in a loop are invisible to grep | The progress file's rows, one per source file. Count each file's assertions now so a port can be checked against the count: explicit ones (`expect`, `should`, `assertVisible`), plus, where the runner's steps are its checks (a Maestro `tapOn` fails when its target is missing), those steps |
 | Shared code | Page objects, custom commands, subflows (`runFlow: file.yaml`), fixtures, hooks, `globalSetup` | Helpers to port once, before the first test that needs each |
 | How it runs | The CI job that runs the suite and the scripts it calls: the build, the services and mock servers it starts, seed and reset calls, env files, devices or browsers, ports | The e2e harness. The CI job is usually the only complete description; read it line by line |
-| Where e2e lives | A JavaScript or TypeScript project with a `package.json`: its root, tests in `tests/**/*.e2e.ts`. A native, Java, or Python project: an `e2e/` folder with its own `package.json` beside the app. Then the source runner's file pattern (`testDir`, `testMatch`, `specPattern`, the flow folder) | The e2e config's location and the progress file's. The two runners must not collect each other's files: when the patterns overlap, narrow one of them |
+| Where e2e lives | A JavaScript or TypeScript project with a `package.json`: its root (in a monorepo, beside the source runner's config), tests in `tests/**/*.e2e.ts`. A native, Java, or Python project: an `e2e/` folder with its own `package.json` beside the app. Then the source runner's file pattern (`testDir`, `testMatch`, `specPattern`, the flow folder) | The e2e config's location and the progress file's. The two runners must not collect each other's files: when the patterns overlap, narrow one of them. Playwright suites often name files `*.e2e.ts` already, which leaves the directories as the only separation: no e2e test under a Playwright `testDir`, and check both runners' `list` output |
 | Can the old suite run here | The source runner installed, the build it needs, the services | Whether parity is checked against a live old run (step 6) or only against the source text |
 
-Write `MIGRATION.md` now (format in step 8), every source test `todo`.
+Write `MIGRATION.md` now (format in step 8), every source file `todo`.
 
 ## 3. Build the harness (once)
 
@@ -89,7 +90,9 @@ once and the progress file says so; later sessions skip this step.
    rather than writing new ones:
    - The one process that serves the app (a dev server, Metro for an Expo dev
      client) becomes the target's `app.command` with `readyUrl` (topic
-     `setup`).
+     `setup`). The command gets only `PATH`, `HOME`, the temp-directory
+     variables, and its `env`, not the shell's environment, so pass what
+     the server read from the old runner's environment in `env`.
    - e2e has no `services` key. Databases, queues, and mock servers start
      before the run with the command the CI job uses, or `app.command` runs
      a script that brings them up and then serves the app. Name the command
@@ -97,13 +100,24 @@ once and the progress file says so; later sessions skip this step.
    - A reset or seed the source ran per test (`runScript` with `http.post`,
      `cy.task('db:reset')`, an API call in `beforeEach`) becomes `fetch` in a
      `beforeEach` or a fixture, so each test still starts from known data.
+   - A seed helper that imports the app's own code (an ORM factory, a
+     server module) is reused, not rewritten. e2e loads every `.ts` file as
+     an ES module, where the old runner may have compiled it to CommonJS,
+     so such an import can fail in a test: `__dirname is not defined`, a named
+     export missing from a CommonJS package, or `ERR_UNSUPPORTED_DIR_IMPORT`.
+     Then run the helper unchanged in a child process with the repo's own
+     TypeScript runner (`ts-node`, `tsx`) and call it from a fixture. Do not
+     edit the app's modules to make them load.
    - Env values become module constants; passwords and tokens go under
-     `credentials` or `secrets` (topic `setup`).
+     `credentials` or `secrets` (topic `setup`). When the old config loaded
+     an env file (`dotenv.config()`), load it the same way in the e2e
+     config, so the helpers see the same values.
 4. Port the simplest source test, often the sign-in or the launch, as the
    smoke test. It must pass on every target before any other port. When it
    cannot, the harness is wrong, not the test: fix the harness.
-5. Add a `package.json` script for the e2e suite, and keep the old suite's
-   scripts as they were.
+5. `init` adds a `test:e2e` script that runs `e2e run`, and leaves the name
+   alone when a script already has it. Then add one under another name.
+   Keep the old suite's scripts as they were.
 6. Mark the harness done in the progress file, with the commands that start the
    dependencies, run the old suite, and run the new one.
 
@@ -136,14 +150,19 @@ Then each test, one at a time:
   (`// Ported from __e2e__/flows/login.yml`), so reports and reviewers map
   one to the other.
 - Translate literally first with the guide's tables, one awaited call per
-  source step. Every source assertion becomes an e2e assertion, and the
-  count should match the inventory's.
+  source step. Every source assertion becomes an e2e assertion, so the
+  count is at least the inventory's: a wait that fails on timeout
+  (`waitForFunction`) becomes an assertion too.
+- A test the source skips is ported in full and stays skipped, with the
+  source's reason, so either suite can turn it back on.
 - Learn exact names before writing a locator: `e2e mcp` with `open_session`,
   `observe`, and `locate` (topic `mcp`). When your client has no `e2e` MCP
   tools, run the test and read the screen listed on its trace page
   (topic `debugging`); do not build a bridge. The guide's notes on
   selectors list the edits most ports need: e2e matches whole strings and
-  fails on several matches where the old runner took the first.
+  fails on several matches where the old runner took the first. A hidden
+  twin of the same test id takes `{ visible: true }`; two real matches,
+  such as a second toast over the first, take the one the step means.
 - A sleep or fixed wait becomes an assertion on the state it waited for.
 - A per-platform branch becomes `{ platforms: [...] }` on a test, or an `if`
   on the `platform` fixture inside one.
@@ -189,9 +208,9 @@ A port is done when it is as strict as the source and passes every time.
 Until the user retires a source test, both runners keep it.
 
 - Ported tests stay in the old suite too. Delete a source test only when the
-  user confirms, then mark it `retired`. Once no remaining source test uses
-  a shared helper, propose deleting it, and delete it when the user
-  confirms.
+  user confirms, then mark it `retired`. Once no remaining source test and
+  no e2e helper uses a shared helper, propose deleting it, and delete it
+  when the user confirms.
 - CI: propose adding the e2e suite beside the old job once a few ports are
   green, and make the change only when the user agrees, since it edits the
   old runner's workflow. Reuse its build, services, and devices. Two
@@ -236,6 +255,10 @@ Harness: done, smoke `tests/login.e2e.ts` on ios and android
 
 flows/composer.yml and flows/composer-self-label.yml (both need `signInAlice()`).
 ```
+
+One row per source file. A file whose tests end in different statuses
+gets one row per test. A suite with hundreds of tests keeps file rows: the
+table is read at the start of every session.
 
 Statuses: `todo`; `ported` (green in e2e, the source test still runs);
 `retired` (the user confirmed, the source test is deleted); `blocked`
