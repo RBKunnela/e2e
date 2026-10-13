@@ -50,8 +50,8 @@ one exists, this is a later session:
    names. Its `Next` section names the slice this session takes, unless the
    user names another.
 2. Check it against the repo before trusting it: every `ported` test still
-   exists in both suites, every source test the file lists still exists,
-   and no new source test is missing from it (add those as `todo`).
+   exists in both suites, every source test the file lists still exists
+   (except `retired` ones, deleted on purpose), and no new source test is missing from it (add those as `todo`).
 3. Run the file's `Run new` command once. A ported test that fails now is
    the first thing to fix, before any new slice.
 4. Unless the progress file's `Harness:` line says `done`, go to step 3, Build
