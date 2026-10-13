@@ -179,6 +179,34 @@ skill for the rest. It is based on
 from poteto's pstack, with e2e in place of a hand-rolled harness.
 </Accordion>
 
+## Migrate an existing suite
+
+The `migrate-to-e2e` skill moves a Playwright, Cypress, Selenium, Detox,
+or Maestro suite to e2e one slice per session. The old suite keeps
+running beside the new tests, so you can stop after any session.
+
+<CodeGroup>
+```bash npm
+npx skills add tester-army/e2e --skill migrate-to-e2e
+```
+
+```bash pnpm
+pnpm dlx skills add tester-army/e2e --skill migrate-to-e2e
+```
+
+```bash bun
+bunx skills add tester-army/e2e --skill migrate-to-e2e
+```
+</CodeGroup>
+
+Then ask the agent for `/migrate-to-e2e`. It ports the slice you pick and
+runs each ported test three times on every target. A `MIGRATION.md` file
+records progress for the next session. The agent deletes an old test only
+when you confirm. It first reads the migration guide for your runner:
+[Playwright](/migrate/playwright), [Cypress](/migrate/cypress),
+[Selenium](/migrate/selenium), [Detox](/migrate/detox), or
+[Maestro](/migrate/maestro).
+
 ## Next
 
 <CardGroup cols={2}>

@@ -196,6 +196,13 @@ suites that consume the built packages the way a user would.
   package and not read by `e2e guide`. `references/example/` is the skill
   it generated and ran for `apps/testbed`: regenerate it when a playground
   route, label, or test it names changes.
+- `skills/migrate-to-e2e/`: a consumer skill that ports a Playwright,
+  Cypress, Selenium, Detox, or Maestro suite one slice per session, the old
+  suite running beside the new one, with a `MIGRATION.md` progress file the next
+  session resumes from. It routes to `docs/migrate/<runner>.mdx` for the
+  API mapping, so a mapping change edits the guide, not the skill. Installed
+  with `npx skills add tester-army/e2e --skill migrate-to-e2e`; not shipped
+  in the package and not read by `e2e guide`.
 - `.dev/skills/` — the skills we use to work on this repo (`authoring-docs`,
   `babysit`, `ship-pr`, `verify`, `writing-pr`). `npx skills add tester-army/e2e`
   offers only `skills/*`: its default scan never looks in `.dev/`, and it skips
