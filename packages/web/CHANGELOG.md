@@ -1,5 +1,25 @@
 # @e2e-dev/web
 
+## 0.15.5
+
+### Patch Changes
+
+- [#1479](https://github.com/tester-army/e2e/pull/1479) [`d15a98e`](https://github.com/tester-army/e2e/commit/d15a98e0711a185873a7a57a108dd254673e327c) Thanks [@okwasniewski](https://github.com/okwasniewski)! - `app.baseUrl` no longer ends in a slash, so `${app.baseUrl}/api/users` requests `/api/users` instead of `//api/users`. With `test` from `@e2e-dev/web`, `app.baseUrl` is typed `string`, since a `web()` target always declares `app.url`. A test that relied on the trailing slash, such as `${app.baseUrl}api/users` or `new URL('users', app.baseUrl)` on a URL with a path, adds the slash itself.
+
+- [#1549](https://github.com/tester-army/e2e/pull/1549) [`08b102a`](https://github.com/tester-army/e2e/commit/08b102a08ea9635e7f3482e15664e26a6e1b2408) Thanks [@okwasniewski](https://github.com/okwasniewski)! - An element inside a hidden `<iframe>` now reads as hidden, cross-origin frames included: `isVisible()` returns false, `toBeHidden()` passes, `getByRole` and `{ visible: true }` skip it, and actions wait until the frame shows.
+
+- [#1544](https://github.com/tester-army/e2e/pull/1544) [`8f17ad3`](https://github.com/tester-army/e2e/commit/8f17ad3ab75637ed24c9752611bc9f7083af4eb1) Thanks [@okwasniewski](https://github.com/okwasniewski)! - Two `toHaveScreenshot` calls (or other screen reads) running at once on one page no longer fail with `LOCATOR_NOT_FOUND: node became stale`. The engine now takes concurrent observations in turn.
+
+- [#1548](https://github.com/tester-army/e2e/pull/1548) [`40826e4`](https://github.com/tester-army/e2e/commit/40826e47050730c53469427317312bf17911e2b6) Thanks [@okwasniewski](https://github.com/okwasniewski)! - `route.fulfill` takes a `Buffer` or `Uint8Array` body and sends the bytes unchanged, and sets every cookie of a `set-cookie` header that joins them with `\n`. A `route.continue` header set to `undefined` is dropped, also on redirects. `WebResponse` adds `body()`, which returns the bytes, so `route.fetch()` and `waitForResponse` can hand binary bodies on.
+
+- [#1551](https://github.com/tester-army/e2e/pull/1551) [`e99a6fa`](https://github.com/tester-army/e2e/commit/e99a6fa83dd35af4b13cde7c2b31475cadb8787f) Thanks [@okwasniewski](https://github.com/okwasniewski)! - In Chromium, screenshots, `toHaveScreenshot`, and observations no longer wait on an iframe whose first navigation has not committed, such as one whose request a route handler holds. Before, they timed out with no screenshot.
+
+- [#1505](https://github.com/tester-army/e2e/pull/1505) [`bdf769b`](https://github.com/tester-army/e2e/commit/bdf769bc270061b93f11847c204a9d40de737bc4) Thanks [@okwasniewski](https://github.com/okwasniewski)! - A fixture call that times out names what it waited for: `browser.waitForResponse('foo.css')` fails with `operation timed out in browser.waitForResponse "foo.css"`. Steps for `waitForURL`, `waitForResponse`, `route`, and `unroute` show a string pattern in quotes and a RegExp as its literal.
+
+- [#1493](https://github.com/tester-army/e2e/pull/1493) [`91bd614`](https://github.com/tester-army/e2e/commit/91bd61490d20c7536a77ed5ed74e556a856da738) Thanks [@okwasniewski](https://github.com/okwasniewski)! - `e2e doctor` reports whether the browser a run launches is installed, or that the first run will download it. Requires e2e 0.22.1 or newer.
+
+- [#1524](https://github.com/tester-army/e2e/pull/1524) [`cba5e0e`](https://github.com/tester-army/e2e/commit/cba5e0ecfbb7a1b0c61d0328dad9485cc87c2ab6) Thanks [@okwasniewski](https://github.com/okwasniewski)! - The web engine implements `session.resize`, so the agent's `resize_viewport` tool is available on web targets. Requires e2e 0.22.1 or newer.
+
 ## 0.15.4
 
 ### Patch Changes
